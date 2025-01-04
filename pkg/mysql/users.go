@@ -12,17 +12,17 @@ type UserModel struct {
 
 func (m *UserModel) Insert(name, password string) (int, error) {
 	stml := `INSERT INTO users (name, password)
-			VALUES(?, ?)`
+			VALUES($S, $S)`
 	res, err := m.db.Exec(stml, name, password)
 
 	if err != nil {
-		return 0, nil
+		return 0, err
 	}
 
 	id, err := res.LastInsertId()
 
 	if err != nil {
-		return 0, nil
+		return 0, err
 	}
 
 	return int(id), nil
@@ -37,7 +37,7 @@ func (m *UserModel) GetById(id int) (*models.User, error) {
 			WHERE id = ?`
 	row := m.db.QueryRow(stmt, id)
 
-	user := *&models.User{}
+	user := &models.User{}
 
 	err := row.Scan(&user.Id, &user.Name, &user.Password, &user.Ads)
 
@@ -45,5 +45,5 @@ func (m *UserModel) GetById(id int) (*models.User, error) {
 		return nil, err
 	}
 
-	return &user, nil
+	return user, nil
 }

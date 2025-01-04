@@ -2,42 +2,45 @@ package main
 
 import (
 	"database/sql"
-	"flag"
 	"log"
 	"net/http"
 	"os"
 
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/EgorYunev/YMarket/config"
+	_ "github.com/lib/pq"
 )
-
-func main() {
-	adr := flag.String("adr", ":8080", "Server http adress")
-	dbAdr := flag.String("dbadr", "root:admin@tcp(localhost:33060)/ymarket", "Database adress")
-	app := New()
-	start(app)
-
-	app.InfoLog.Printf("Connecting to data base %s", *dbAdr)
-	app.DB = startDB(*dbAdr)
-	defer app.DB.Close()
-
-	app.InfoLog.Printf("Starting http server on %s port", *adr)
-	log.Fatal(http.ListenAndServe(*adr, app.Server))
-}
-
-func startDB(dbard string) *sql.DB {
-	db, err := sql.Open("mysql", dbard)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-	return db
-}
 
 type App struct {
 	Server  *http.ServeMux
 	InfoLog *log.Logger
 	ErrLog  *log.Logger
 	DB      *sql.DB
+}
+
+func main() {
+	app := New()
+	start(app)
+
+	app.InfoLog.Printf("Connecting to data base %s", config.DBAdress)
+	app.startDB(config.DBAdress)
+	defer app.DB.Close()
+
+	app.InfoLog.Printf("Starting http server on %s port", config.HTTPAdress)
+	log.Fatal(http.ListenAndServe(config.HTTPAdress, app.Server))
+}
+
+func (a *App) startDB(dbArd string) {
+	db, err := sql.Open("postgres", dbArd)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = db.Ping()
+	if err != nil {
+		a.ErrLog.Fatalf("Cannot ping data base: %s", dbArd)
+	}
+	a.DB = db
 }
 
 func New() *App {

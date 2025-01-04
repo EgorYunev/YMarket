@@ -13,6 +13,7 @@ func start(app *App) {
 }
 
 func (app *App) homeHandler(w http.ResponseWriter, r *http.Request) {
+
 	tm, err := template.ParseFiles("./ui/html/main.html")
 
 	if err != nil {
