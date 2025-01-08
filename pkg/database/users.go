@@ -1,4 +1,4 @@
-package mysql
+package database
 
 import (
 	"database/sql"
@@ -11,9 +11,9 @@ type UserModel struct {
 }
 
 func (m *UserModel) Insert(name, password string) (int, error) {
-	stml := `INSERT INTO users (name, password)
+	stmt := `INSERT INTO users (name, password)
 			VALUES($S, $S)`
-	res, err := m.db.Exec(stml, name, password)
+	res, err := m.db.Exec(stmt, name, password)
 
 	if err != nil {
 		return 0, err
