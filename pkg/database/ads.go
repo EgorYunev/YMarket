@@ -7,14 +7,14 @@ import (
 )
 
 type AdModel struct {
-	db *sql.DB
+	DB *sql.DB
 }
 
 func (m *AdModel) Insert() (int, error) {
-	stmt := `INSERT INTO ads (name, description, userId)
-			VALUES ($S, $S, $N)`
+	stmt := `INSERT INTO ads (name, description, user_id, price)
+			VALUES ($S, $S, $N, &N)`
 
-	res, err := m.db.Exec(stmt)
+	res, err := m.DB.Exec(stmt)
 
 	if err != nil {
 		return 0, err
@@ -30,10 +30,10 @@ func (m *AdModel) Insert() (int, error) {
 	return int(id), nil
 }
 
-func (m *AdModel) GetAllByUserId() ([]models.Ad, error) {
+func (m *AdModel) GetAllByUserId() ([]*models.Ad, error) {
 	stmt := `SELECT * FROM ads
 			WHERE user_id = $N`
-	row, err := m.db.Query(stmt)
+	row, err := m.DB.Query(stmt)
 
 	if err != nil {
 		return nil, err
@@ -41,11 +41,11 @@ func (m *AdModel) GetAllByUserId() ([]models.Ad, error) {
 
 	defer row.Close()
 
-	ads := []models.Ad{}
+	ads := []*models.Ad{}
 	for row.Next() {
 		ad := &models.Ad{}
 		row.Scan(&ad.Id, &ad.Name, &ad.Description, &ad.UserId)
-		ads = append(ads, *ad)
+		ads = append(ads, ad)
 	}
 
 	if row.Err() != nil {
@@ -59,7 +59,7 @@ func (m *AdModel) GetAllByUserId() ([]models.Ad, error) {
 func (m *AdModel) GetById() (models.Ad, error) {
 	stmt := `SELECT * FROM ads WHERE id = $N`
 
-	row := m.db.QueryRow(stmt)
+	row := m.DB.QueryRow(stmt)
 
 	res := models.Ad{}
 	err := row.Scan(&res.Id, &res.Name, &res.Description)
@@ -73,4 +73,40 @@ func (m *AdModel) GetById() (models.Ad, error) {
 	}
 
 	return res, nil
+}
+
+func (m *AdModel) GetLastest() ([]*models.Ad, error) {
+	stmt := `SELECT * FROM ads`
+
+	row, err := m.DB.Query(stmt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer row.Close()
+
+	ads := []*models.Ad{}
+
+	i := 0
+	for row.Next() {
+		i++
+		ad := &models.Ad{}
+
+		err = row.Scan(&ad.Id, &ad.Name, &ad.Description, &ad.Price)
+		if err != nil {
+			return nil, err
+		}
+
+		ads = append(ads, ad)
+		if i >= 10 {
+			break
+		}
+	}
+
+	if row.Err() != nil {
+		return nil, row.Err()
+	}
+
+	return ads, nil
 }

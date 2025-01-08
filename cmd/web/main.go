@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/EgorYunev/YMarket/config"
+	"github.com/EgorYunev/YMarket/pkg/database"
 	_ "github.com/lib/pq"
 )
 
@@ -14,7 +15,8 @@ type App struct {
 	Server  *http.ServeMux
 	InfoLog *log.Logger
 	ErrLog  *log.Logger
-	DB      *sql.DB
+	Users   *database.UserModel
+	Ads     *database.AdModel
 }
 
 func main() {
@@ -22,14 +24,18 @@ func main() {
 	start(app)
 
 	app.InfoLog.Printf("Connecting to data base %s", config.DBAdress)
-	app.startDB(config.DBAdress)
-	defer app.DB.Close()
+	db := app.startDB(config.DBAdress)
+
+	defer db.Close()
+
+	app.Users.DB = db
+	app.Ads.DB = db
 
 	app.InfoLog.Printf("Starting http server on %s port", config.HTTPAdress)
 	log.Fatal(http.ListenAndServe(config.HTTPAdress, app.Server))
 }
 
-func (a *App) startDB(dbArd string) {
+func (a *App) startDB(dbArd string) *sql.DB {
 	db, err := sql.Open("postgres", dbArd)
 
 	if err != nil {
@@ -40,7 +46,7 @@ func (a *App) startDB(dbArd string) {
 	if err != nil {
 		a.ErrLog.Fatalf("Cannot ping data base: %s", dbArd)
 	}
-	a.DB = db
+	return db
 }
 
 func New() *App {
@@ -49,6 +55,8 @@ func New() *App {
 	app := App{
 		InfoLog: infLog,
 		ErrLog:  errLog,
+		Users:   &database.UserModel{},
+		Ads:     &database.AdModel{},
 	}
 	return &app
 }

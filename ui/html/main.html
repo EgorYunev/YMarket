@@ -7,5 +7,14 @@
 </head>
 <body>
     <h1>YMarket</h1>
+    <h4>Последние объявления:</h4>
+    {{range .}}
+    <div>
+        <span>{{.Id}}</span>
+        <span>{{.Name}}</span>
+        <span>{{.Description}}</span>
+        <span>{{.Price}}</span>
+    </div>
+    {{end}}
 </body>
 </html>

@@ -21,7 +21,12 @@ func (app *App) homeHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Cannot parse html files", http.StatusInternalServerError)
 	}
 
-	tm.Execute(w, nil)
+	ads, err := app.Ads.GetLastest()
+	if err != nil {
+		app.ErrLog.Print(err)
+	}
+
+	tm.Execute(w, ads)
 }
 
 func account(w http.ResponseWriter, r *http.Request) {

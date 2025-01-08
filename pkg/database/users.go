@@ -7,13 +7,13 @@ import (
 )
 
 type UserModel struct {
-	db *sql.DB
+	DB *sql.DB
 }
 
 func (m *UserModel) Insert(name, password string) (int, error) {
 	stmt := `INSERT INTO users (name, password)
 			VALUES($S, $S)`
-	res, err := m.db.Exec(stmt, name, password)
+	res, err := m.DB.Exec(stmt, name, password)
 
 	if err != nil {
 		return 0, err
@@ -35,7 +35,7 @@ func (m *UserModel) GetById(id int) (*models.User, error) {
 			FROM users
 			LEFT JOIN ads a ON id = a.user_id
 			WHERE id = ?`
-	row := m.db.QueryRow(stmt, id)
+	row := m.DB.QueryRow(stmt, id)
 
 	user := &models.User{}
 
