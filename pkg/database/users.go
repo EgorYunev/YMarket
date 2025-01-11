@@ -10,22 +10,16 @@ type UserModel struct {
 	DB *sql.DB
 }
 
-func (m *UserModel) Insert(name, password string) (int, error) {
+func (m *UserModel) Insert(name, password string) error {
 	stmt := `INSERT INTO users (name, password)
-			VALUES($S, $S)`
-	res, err := m.DB.Exec(stmt, name, password)
+			VALUES($1, $2)`
+	_, err := m.DB.Exec(stmt, name, password)
 
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	id, err := res.LastInsertId()
-
-	if err != nil {
-		return 0, err
-	}
-
-	return int(id), nil
+	return nil
 
 }
 
@@ -34,7 +28,7 @@ func (m *UserModel) GetById(id int) (*models.User, error) {
 			a.id, a.name, a.description, a.price
 			FROM users
 			LEFT JOIN ads a ON id = a.user_id
-			WHERE id = ?`
+			WHERE id = %n`
 	row := m.DB.QueryRow(stmt, id)
 
 	user := &models.User{}
