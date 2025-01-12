@@ -28,7 +28,7 @@ func (m *UserModel) GetById(id int) (*models.User, error) {
 			a.id, a.name, a.description, a.price
 			FROM users
 			LEFT JOIN ads a ON id = a.user_id
-			WHERE id = %n`
+			WHERE id = $1`
 	row := m.DB.QueryRow(stmt, id)
 
 	user := &models.User{}

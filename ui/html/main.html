@@ -7,10 +7,14 @@
 </head>
 <body>
     <h1>YMarket</h1>
+    <h4>Поиск объявлений:</h4>
+    <form method="get", action="/ad/search">
+        <input type="text", name="title", placeholder="поиск объявлений">
+        <button type="submit">Найти</button>
+    </form>
     <h4>Последние объявления:</h4>
     {{range .}}
     <div>
-        <span>{{.Id}}</span>
         <span>{{.Name}}</span>
         <span>{{.Description}}</span>
         <span>{{.Price}}</span>

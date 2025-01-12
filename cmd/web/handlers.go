@@ -13,6 +13,7 @@ func start(app *App) {
 	serv.HandleFunc("/", app.homeHandler)
 	serv.HandleFunc("/reg", app.registration)
 	serv.HandleFunc("/user/add", app.addUser)
+	serv.HandleFunc("/ad/search", app.getAdsFiltered)
 	app.Server = serv
 }
 
@@ -34,16 +35,6 @@ func (app *App) homeHandler(w http.ResponseWriter, r *http.Request) {
 	tm.Execute(w, ads)
 }
 
-func (app *App) success(w http.ResponseWriter, r *http.Request) {
-	tm, err := template.ParseFiles("./ui/html/success.html")
-	if err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	tm.Execute(w, nil)
-}
-
 func account(w http.ResponseWriter, r *http.Request) {
 
 }
@@ -60,7 +51,26 @@ func getAdById(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func getAdsFiltered(w http.ResponseWriter, r *http.Request) {
+func (app *App) getAdsFiltered(w http.ResponseWriter, r *http.Request) {
+
+	tm, err := template.ParseFiles("./ui/html/ads.html")
+
+	if err != nil {
+		app.ErrLog.Print(err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	name := r.FormValue("title")
+
+	ads, err := app.Ads.GetAdsFiltered(name)
+
+	if err != nil {
+		app.ErrLog.Print(err)
+		http.Error(w, "Cannot found any data", http.StatusInternalServerError)
+		return
+	}
+
+	tm.Execute(w, ads)
 
 }
 
@@ -79,7 +89,9 @@ func (app *App) addUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		app.ErrLog.Print(err)
 		http.Error(w, "Cannot add new user", http.StatusBadRequest)
+		return
 	}
+	http.Redirect(w, r, "/", http.StatusMovedPermanently)
 }
 
 func deleteUser(w http.ResponseWriter, r *http.Request) {

@@ -110,3 +110,30 @@ func (m *AdModel) GetLastest() ([]*models.Ad, error) {
 
 	return ads, nil
 }
+
+func (m *AdModel) GetAdsFiltered(name string) ([]*models.Ad, error) {
+	stmt := `SELECT * FROM ads
+			WHERE "name" = $1`
+	ads := []*models.Ad{}
+
+	row, err := m.DB.Query(stmt, name)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer row.Close()
+
+	for row.Next() {
+		ad := &models.Ad{}
+
+		row.Scan(&ad.Id, &ad.Name, &ad.Description, &ad.Price)
+		ads = append(ads, ad)
+	}
+
+	if row.Err() != nil {
+		return nil, row.Err()
+	}
+
+	return ads, nil
+}
