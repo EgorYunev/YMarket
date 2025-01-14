@@ -35,6 +35,34 @@ func (app *App) homeHandler(w http.ResponseWriter, r *http.Request) {
 	tm.Execute(w, ads)
 }
 
+// TODO
+func (app *App) login(w http.ResponseWriter, r *http.Request) {
+
+	tm, err := template.ParseFiles("./ui/html/login.html")
+
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		app.ErrLog.Print(err)
+		return
+	}
+
+	user := models.User{}
+
+	user.Name = r.FormValue("username")
+	user.Password = r.FormValue("password")
+
+	token, err := app.Auth.GetToken(&user)
+
+	if err != nil {
+		http.Error(w, "Not authtorize", http.StatusUnauthorized)
+		app.ErrLog.Print(err)
+		return
+	}
+
+	tm.Execute(w, nil)
+
+}
+
 func account(w http.ResponseWriter, r *http.Request) {
 
 }

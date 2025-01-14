@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/EgorYunev/YMarket/config"
+	"github.com/EgorYunev/YMarket/pkg/auth"
 	"github.com/EgorYunev/YMarket/pkg/database"
 	_ "github.com/lib/pq"
 )
@@ -17,6 +18,7 @@ type App struct {
 	ErrLog  *log.Logger
 	Users   *database.UserModel
 	Ads     *database.AdModel
+	Auth    *auth.Auth
 }
 
 func main() {
@@ -30,6 +32,7 @@ func main() {
 
 	app.Users.DB = db
 	app.Ads.DB = db
+	app.Auth.DB = db
 
 	app.InfoLog.Printf("Starting http server on %s port", config.HTTPAdress)
 	log.Fatal(http.ListenAndServe(config.HTTPAdress, app.Server))
@@ -57,6 +60,7 @@ func New() *App {
 		ErrLog:  errLog,
 		Users:   &database.UserModel{},
 		Ads:     &database.AdModel{},
+		Auth:    &auth.Auth{},
 	}
 	return &app
 }
