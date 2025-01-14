@@ -10,6 +10,7 @@
     <h4>Найдены объявления:</h4>
     {{range .}}
     <div class="ad">
+        <p>Владелец объявления: <a>{{.Owner.Name}}</a></p>
         <p>{{.Name}}</p>
         <p>{{.Description}}</p>
         <p>{{.Price}}</p>

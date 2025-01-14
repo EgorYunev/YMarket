@@ -30,9 +30,9 @@ func (m *AdModel) Insert() (int, error) {
 	return int(id), nil
 }
 
-func (m *AdModel) GetAllByUserId() ([]*models.Ad, error) {
+func (m *AdModel) GetAllByUserId(userId int) ([]*models.Ad, error) {
 	stmt := `SELECT * FROM ads
-			WHERE user_id = $N`
+			WHERE user_id = $1`
 	row, err := m.DB.Query(stmt)
 
 	if err != nil {
@@ -56,8 +56,8 @@ func (m *AdModel) GetAllByUserId() ([]*models.Ad, error) {
 
 }
 
-func (m *AdModel) GetById() (models.Ad, error) {
-	stmt := `SELECT * FROM ads WHERE id = $N`
+func (m *AdModel) GetById(id int) (models.Ad, error) {
+	stmt := `SELECT * FROM ads WHERE id = $1`
 
 	row := m.DB.QueryRow(stmt)
 
@@ -76,7 +76,8 @@ func (m *AdModel) GetById() (models.Ad, error) {
 }
 
 func (m *AdModel) GetLastest() ([]*models.Ad, error) {
-	stmt := `SELECT * FROM ads`
+	stmt := `SELECT ads.id, ads.name, ads.description, ads.price, users.name, users.id FROM ads
+			LEFT JOIN users ON user_id = users.id`
 
 	row, err := m.DB.Query(stmt)
 
@@ -93,7 +94,7 @@ func (m *AdModel) GetLastest() ([]*models.Ad, error) {
 		i++
 		ad := &models.Ad{}
 
-		err = row.Scan(&ad.Id, &ad.Name, &ad.Description, &ad.Price)
+		err = row.Scan(&ad.Id, &ad.Name, &ad.Description, &ad.Price, &ad.Owner.Name, &ad.Owner.Id)
 		if err != nil {
 			return nil, err
 		}
@@ -112,8 +113,9 @@ func (m *AdModel) GetLastest() ([]*models.Ad, error) {
 }
 
 func (m *AdModel) GetAdsFiltered(name string) ([]*models.Ad, error) {
-	stmt := `SELECT * FROM ads
-			WHERE "name" = $1`
+	stmt := `SELECT ads.id, ads.name, ads.description, ads.price, users.name, users.id FROM ads
+			LEFT JOIN users ON user_id = users.id
+			WHERE ads.name = $1`
 	ads := []*models.Ad{}
 
 	row, err := m.DB.Query(stmt, name)
@@ -127,7 +129,7 @@ func (m *AdModel) GetAdsFiltered(name string) ([]*models.Ad, error) {
 	for row.Next() {
 		ad := &models.Ad{}
 
-		row.Scan(&ad.Id, &ad.Name, &ad.Description, &ad.Price)
+		row.Scan(&ad.Id, &ad.Name, &ad.Description, &ad.Price, &ad.Owner.Name, &ad.Owner.Id)
 		ads = append(ads, ad)
 	}
 

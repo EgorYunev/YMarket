@@ -15,9 +15,10 @@
     <h4>Последние объявления:</h4>
     {{range .}}
     <div>
-        <span>{{.Name}}</span>
-        <span>{{.Description}}</span>
-        <span>{{.Price}}</span>
+        <p>Владелец объявления: <a>{{.Owner.Name}}</a></p>
+        <p>{{.Name}}</p>
+        <p>{{.Description}}</p>
+        <p>Цена: {{.Price}}руб</p>
     </div>
     {{end}}
 </body>

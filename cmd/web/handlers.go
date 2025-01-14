@@ -98,9 +98,27 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func getUserById(w http.ResponseWriter, r *http.Request) {
+// func (app *App) getUserById(w http.ResponseWriter, r *http.Request) {
 
-}
+// 	tm, err := template.ParseFiles("./ui/html/user.html")
+
+// 	if err != nil {
+// 		http.Error(w, "Internal server error", http.StatusInternalServerError)
+// 		app.ErrLog.Print(err)
+// 		return
+// 	}
+// 	//TODO
+// 	user, err := app.Users.GetById()
+
+// 	if err != nil {
+// 		http.Error(w, "Cannot find data", http.StatusNotFound)
+// 		app.ErrLog.Print(err)
+// 		return
+// 	}
+
+// 	tm.Execute(w, user)
+
+// }
 
 func changeUser(w http.ResponseWriter, r *http.Request) {
 
