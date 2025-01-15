@@ -12,10 +12,10 @@ type Auth struct {
 	DB *sql.DB
 }
 
-var singKey = []byte("ymarket-auth")
+var singKey = []byte("ymarketauth")
 
 func (a *Auth) GetToken(u *models.User) (string, error) {
-	stmt := `SELECT * FROM users
+	stmt := `SELECT id, name, password FROM users
 			WHERE name = $1`
 
 	row := a.DB.QueryRow(stmt, u.Name)
@@ -29,17 +29,19 @@ func (a *Auth) GetToken(u *models.User) (string, error) {
 	}
 
 	if u.Name != user.Name || u.Password != user.Password {
-		err := errors.New("Incorrect data")
+		err = errors.New("Incorrect data")
 		return "", err
 	}
 
-	token := jwt.New(jwt.SigningMethodES256)
+	token := jwt.New(jwt.SigningMethodHS256)
 
 	strToken, err := token.SignedString(singKey)
 
 	if err != nil {
 		return "", err
 	}
+
+	a.DB.Exec("UPDATE users SET token = $1 WHERE id = $2", strToken, user.Id)
 
 	return strToken, nil
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 
@@ -14,6 +15,8 @@ func start(app *App) {
 	serv.HandleFunc("/reg", app.registration)
 	serv.HandleFunc("/user/add", app.addUser)
 	serv.HandleFunc("/ad/search", app.getAdsFiltered)
+	serv.HandleFunc("/login", app.login)
+	serv.HandleFunc("/auth", app.authtorize)
 	app.Server = serv
 }
 
@@ -36,6 +39,33 @@ func (app *App) homeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // TODO
+func (app *App) authtorize(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "Wrong method", http.StatusMethodNotAllowed)
+		app.ErrLog.Print("Method not allowed")
+		return
+	}
+	user := models.User{}
+
+	user.Name = r.FormValue("username")
+	user.Password = r.FormValue("password")
+
+	token, err := app.Auth.GetToken(&user)
+
+	//TODO
+	fmt.Println(token)
+
+	if err != nil {
+		http.Error(w, "Not authtorize", http.StatusUnauthorized)
+		app.ErrLog.Print(err)
+		return
+	}
+
+	http.Redirect(w, r, "/", http.StatusMovedPermanently)
+
+}
+
 func (app *App) login(w http.ResponseWriter, r *http.Request) {
 
 	tm, err := template.ParseFiles("./ui/html/login.html")
@@ -48,18 +78,7 @@ func (app *App) login(w http.ResponseWriter, r *http.Request) {
 
 	user := models.User{}
 
-	user.Name = r.FormValue("username")
-	user.Password = r.FormValue("password")
-
-	token, err := app.Auth.GetToken(&user)
-
-	if err != nil {
-		http.Error(w, "Not authtorize", http.StatusUnauthorized)
-		app.ErrLog.Print(err)
-		return
-	}
-
-	tm.Execute(w, nil)
+	tm.Execute(w, user)
 
 }
 
